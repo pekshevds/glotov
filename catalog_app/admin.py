@@ -1,26 +1,10 @@
 from django.utils.html import format_html
 from django.contrib import admin
-from catalog_app.models import Category, Good, GoodsImage, Manufacturer
+from catalog_app.models import Good, GoodsImage
 
 admin.site.site_header = "Панель администрирования glotov"
 admin.site.site_title = "Панель администрирования glotov"
 admin.site.index_title = "Добро пожаловать!"
-
-
-@admin.register(Category)
-class CategoryKindAdmin(admin.ModelAdmin):
-    list_display = (
-        "__str__",
-        "id",
-    )
-
-
-@admin.register(Manufacturer)
-class ManufacturerAdmin(admin.ModelAdmin):
-    list_display = (
-        "__str__",
-        "id",
-    )
 
 
 class GoodsImageInLine(admin.TabularInline):
@@ -46,17 +30,12 @@ class GoodAdmin(admin.ModelAdmin):
         "balance",
         "price",
         "preview",
-        "category",
         "manufacturer",
         "id",
     )
     search_fields = (
         "name",
         "art",
-    )
-    list_filter = (
-        "manufacturer",
-        "category",
     )
 
     def preview(self, obj):

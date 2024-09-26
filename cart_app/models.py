@@ -1,6 +1,6 @@
 from django.db import models
 from server.base import Directory, Base
-from auth_app.models import Token
+from auth_app.models import User
 from catalog_app.models import Good
 
 
@@ -16,9 +16,11 @@ class Recipient(Directory):
 
 
 class CartItem(Base):
-    token = models.ForeignKey(Token, on_delete=models.CASCADE, verbose_name="Токен")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="Пользователь"
+    )
     good = models.ForeignKey(Good, on_delete=models.CASCADE, verbose_name="Товар")
-    qnt = models.DecimalField(
+    quantity = models.DecimalField(
         verbose_name="Количество",
         max_digits=15,
         decimal_places=3,

@@ -1,136 +1,132 @@
-from decimal import Decimal
-from django.http import HttpRequest
-from rest_framework import permissions
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from auth_app.serializers import TokenSerializer, DataSerializer
+from rest_framework import permissions, authentication
+from catalog_app.models import Good
+
 from cart_app.serializers import CartSerializer
 from cart_app.services import (
-    get_token,
-    get_good,
-    get_cart,
+    fetch_users_cart,
     add_to_cart,
+    set_to_cart,
     delete_from_cart,
     clear_cart,
-    set_to_cart,
-    send_cart,
 )
 
 
 class CartView(APIView):
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request: HttpRequest):
-        response = {"data": None}
-        token = request.GET.get("token")
-        serializer = TokenSerializer(data={"token": token})
-        if serializer.is_valid(raise_exception=True):
-            serializer = CartSerializer(
-                get_cart(token=get_token(token=token)), many=True
-            )
-            response["data"] = serializer.data
+    def get(self, request):
+        queryset = fetch_users_cart(request.user)
+        serializer = CartSerializer(queryset, many=True)
+        response = {"data": serializer.data}
         return Response(response)
 
 
 class CartAddView(APIView):
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request: HttpRequest):
-        response = {"data": None}
-        token = request.GET.get("token")
-        serializer = TokenSerializer(data={"token": token})
-        if serializer.is_valid(raise_exception=True):
-            token = get_token(token=token)
-            add_to_cart(
-                token=token,
-                good=get_good(good_id=request.GET.get("id")),
-                qnt=Decimal(request.GET.get("qnt", "1")),
-            )
-            serializer = CartSerializer(get_cart(token=token), many=True)
-            response["data"] = serializer.data
+    def get(self, request):
+        good = get_object_or_404(Good, id=request.GET.get("good_id", None))
+        add_to_cart(
+            user=request.user, good=good, quantity=float(request.GET.get("quantity", 1))
+        )
+
+        queryset = fetch_users_cart(request.user)
+        serializer = CartSerializer(queryset, many=True)
+        response = {"data": serializer.data}
+        return Response(response)
+
+    def post(self, request):
+        response = {"data": []}
+        data = request.data.get("data", None)
+        if not data:
+            return Response(response)
+        for item in data:
+            good_id = item.get("good_id", None)
+            quantity = item.get("quantity", 0)
+            good = get_object_or_404(Good, id=good_id)
+            add_to_cart(user=request.user, good=good, quantity=quantity)
+
+        queryset = fetch_users_cart(request.user)
+        serializer = CartSerializer(queryset, many=True)
+        response = {"data": serializer.data}
         return Response(response)
 
 
 class CartSetView(APIView):
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request: HttpRequest):
-        response = {"data": None}
-        token = request.GET.get("token")
-        serializer = TokenSerializer(data={"token": token})
-        if serializer.is_valid(raise_exception=True):
-            token = get_token(token=token)
-            set_to_cart(
-                token=token,
-                good=get_good(good_id=request.GET.get("id")),
-                qnt=Decimal(request.GET.get("qnt", "1")),
-            )
-            serializer = CartSerializer(get_cart(token=token), many=True)
-            response["data"] = serializer.data
+    def get(self, request):
+        good = get_object_or_404(Good, id=request.GET.get("good_id", None))
+        set_to_cart(
+            user=request.user, good=good, quantity=float(request.GET.get("quantity", 1))
+        )
+
+        queryset = fetch_users_cart(request.user)
+        serializer = CartSerializer(queryset, many=True)
+        response = {"data": serializer.data}
+        return Response(response)
+
+    def post(self, request):
+        response = {"data": []}
+        data = request.data.get("data", None)
+        if not data:
+            return Response(response)
+        for item in data:
+            good_id = item.get("good_id", None)
+            quantity = float(item.get("quantity", 0))
+            good = get_object_or_404(Good, id=good_id)
+            set_to_cart(user=request.user, good=good, quantity=quantity)
+
+        queryset = fetch_users_cart(request.user)
+        serializer = CartSerializer(queryset, many=True)
+        response = {"data": serializer.data}
         return Response(response)
 
 
 class CartDeleteView(APIView):
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request: HttpRequest):
-        response = {"data": None}
-        token = request.GET.get("token")
-        serializer = TokenSerializer(data={"token": token})
-        if serializer.is_valid(raise_exception=True):
-            token = get_token(token=token)
-            delete_from_cart(
-                token=token,
-                good=get_good(good_id=request.GET.get("id")),
-                qnt=Decimal(request.GET.get("qnt", "1")),
-            )
-            serializer = CartSerializer(get_cart(token=token), many=True)
-            response["data"] = serializer.data
+    def get(self, request):
+        good = get_object_or_404(Good, id=request.GET.get("good_id", 0))
+        delete_from_cart(user=request.user, good=good)
+
+        queryset = fetch_users_cart(request.user)
+        serializer = CartSerializer(queryset, many=True)
+        response = {"data": serializer.data}
+        return Response(response)
+
+    def post(self, request):
+        response = {"data": []}
+        data = request.data.get("data", None)
+        if not data:
+            return Response(response)
+        for item in data:
+            good_id = item.get("good_id", None)
+            quantity = item.get("quantity", 0)
+            good = get_object_or_404(Good, id=good_id)
+            delete_from_cart(user=request.user, good=good, quantity=quantity)
+
+        queryset = fetch_users_cart(request.user)
+        serializer = CartSerializer(queryset, many=True)
+        response = {"data": serializer.data}
         return Response(response)
 
 
 class CartClearView(APIView):
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request: HttpRequest):
-        response = {"data": None}
-        token = request.GET.get("token")
-        serializer = TokenSerializer(data={"token": token})
-        if serializer.is_valid(raise_exception=True):
-            token = get_token(token=token)
-            clear_cart(token=token)
-            serializer = CartSerializer(get_cart(token=token), many=True)
-            response["data"] = serializer.data
-        return Response(response)
+    def get(self, request):
+        clear_cart(user=request.user)
 
-
-class CartSendView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request: HttpRequest):
-        response = {"data": None}
-        serializer = DataSerializer(
-            data={
-                "token": request.GET.get("token"),
-                "name": request.GET.get("name", ""),
-                "phone": request.GET.get("phone", ""),
-                "email": request.GET.get("email", ""),
-            }
-        )
-        if serializer.is_valid(raise_exception=True):
-            token = get_token(token=serializer.data.get("token"))
-            context = {
-                "cart_items": get_cart(token=token),
-                "name": serializer.data.get("name"),
-                "phone": serializer.data.get("phone"),
-                "email": serializer.data.get("email"),
-            }
-            if send_cart(context):
-                clear_cart(token=token)
-            serializer = CartSerializer(get_cart(token=token), many=True)
-            response["data"] = serializer.data
-        return Response(response)
-
-    def post(self, request: HttpRequest):
-        response = {"data": None}
+        queryset = fetch_users_cart(request.user)
+        serializer = CartSerializer(queryset, many=True)
+        response = {"data": serializer.data}
         return Response(response)

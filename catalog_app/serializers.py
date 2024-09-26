@@ -1,30 +1,6 @@
 from rest_framework import serializers
 from image_app.serializers import ImageSerializer
-from catalog_app.models import Good, Manufacturer, Category
-
-
-class ManufacturerSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    name = serializers.CharField(max_length=150)
-
-    def create(self, validated_data):
-        manufacturer, _ = Manufacturer.objects.get_or_create(
-            id=validated_data.get("id")
-        )
-        manufacturer.name = validated_data.get("name", manufacturer.name)
-        manufacturer.save()
-        return manufacturer
-
-
-class CategorySerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    name = serializers.CharField(max_length=150)
-
-    def create(self, validated_data):
-        category, _ = Category.objects.get_or_create(id=validated_data.get("id"))
-        category.name = validated_data.get("name", category.name)
-        category.save()
-        return category
+from catalog_app.models import Good
 
 
 class GoodsImageSerializer(serializers.Serializer):
@@ -38,8 +14,9 @@ class GoodSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=11, required=False, allow_blank=True)
     balance = serializers.DecimalField(max_digits=15, decimal_places=3, required=False)
     price = serializers.DecimalField(max_digits=15, decimal_places=2, required=False)
-    manufacturer = ManufacturerSerializer(required=False, allow_null=True)
-    category = CategorySerializer(required=False, allow_null=True)
+    manufacturer = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
     description = serializers.CharField(
         max_length=1024, required=False, allow_null=True
     )
@@ -63,8 +40,9 @@ class SimpleGoodSerializer(serializers.Serializer):
         max_length=1024, required=False, allow_null=True
     )
     comment = serializers.CharField(required=False, allow_null=True)
-    manufacturer_id = serializers.UUIDField(required=False, allow_null=True)
-    category_id = serializers.UUIDField(required=False, allow_null=True)
+    manufacturer = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
     preview = ImageSerializer(
         required=False, allow_null=True, source="image", read_only=True
     )
@@ -84,8 +62,9 @@ class UploadGoodSerializer(serializers.Serializer):
         max_length=1024, required=False, allow_null=True, allow_blank=True
     )
     comment = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    manufacturer = ManufacturerSerializer(required=False, allow_null=True)
-    category = CategorySerializer(required=False, allow_null=True)
+    manufacturer = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
 
     def create(self, validated_data):
         good, _ = Good.objects.get_or_create(id=validated_data.get("id"))
@@ -95,22 +74,8 @@ class UploadGoodSerializer(serializers.Serializer):
         good.balance = validated_data.get("balance", good.balance)
         good.price = validated_data.get("price", good.price)
         good.description = validated_data.get("description", good.description)
+        good.manufacturer = validated_data.get("manufacturer", good.manufacturer)
         good.comment = validated_data.get("comment", good.comment)
 
-        manufacturer_data = validated_data.get("manufacturer")
-        if manufacturer_data:
-            manufacturer, _ = Manufacturer.objects.get_or_create(
-                id=manufacturer_data.get("id")
-            )
-            manufacturer.name = manufacturer_data.get("name", manufacturer.name)
-            manufacturer.save()
-            good.manufacturer = manufacturer
-
-        category_data = validated_data.get("category")
-        if category_data:
-            category, _ = Category.objects.get_or_create(id=category_data.get("id"))
-            category.name = category_data.get("name", category.name)
-            category.save()
-            good.category = category
         good.save()
         return good

@@ -13,7 +13,7 @@ class RecipientAdmin(admin.ModelAdmin):
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
     list_display = (
-        "token",
+        "user",
         "good",
-        "qnt",
+        "quantity",
     )

@@ -1,22 +1,7 @@
 from django.db import models
-
-# from pytils.translit import slugify
 from server.base import Base
 from server.base import Directory
 from image_app.models import Image
-# from catalog_app.commons import secret_from_string
-
-
-class Manufacturer(Directory):
-    class Meta:
-        verbose_name = "Производитель"
-        verbose_name_plural = "Производители"
-
-
-class Category(Directory):
-    class Meta:
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
 
 
 class Good(Directory):
@@ -24,12 +9,12 @@ class Good(Directory):
         verbose_name="Артикул",
         max_length=50,
         blank=True,
-        null=True,
+        null=False,
         default="",
         db_index=True,
     )
     code = models.CharField(
-        verbose_name="Код", max_length=11, blank=True, null=True, default=""
+        verbose_name="Код", max_length=11, blank=True, null=False, default=""
     )
     balance = models.DecimalField(
         verbose_name="Остаток",
@@ -56,35 +41,14 @@ class Good(Directory):
         null=True,
     )
     is_active = models.BooleanField(verbose_name="Активен", default=False)
-    manufacturer = models.ForeignKey(
-        Manufacturer,
-        on_delete=models.PROTECT,
-        verbose_name="Производитель",
-        related_name="goods",
-        blank=True,
-        null=True,
-    )
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.PROTECT,
-        verbose_name="Категория",
-        related_name="goods",
-        blank=True,
-        null=True,
+    manufacturer = models.CharField(
+        verbose_name="Производитель", max_length=100, blank=True, null=False, default=""
     )
     description = models.CharField(
-        verbose_name="Описание", max_length=1024, blank=True, null=True, default=""
+        verbose_name="Описание", max_length=1024, blank=True, null=False, default=""
     )
 
-    """@property
-    def images(self):
-        return GoodsImage.objects.filter(good=self)"""
-
     def save(self, *args, **kwargs) -> None:
-        """if not self.slug:
-        self.slug = slugify(
-            f"{self.name}-{secret_from_string(str(self.id))}"
-        )"""
         return super().save(*args, **kwargs)
 
     class Meta:

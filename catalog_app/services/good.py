@@ -1,9 +1,7 @@
 from typing import List
 from django.db.models import Q
 from django.db import transaction
-from catalog_app.models import Good, Manufacturer, Category
-from catalog_app.services.manufacturer import handle_manufacturer
-from catalog_app.services.category import handle_category
+from catalog_app.models import Good
 
 
 def good_by_id(good_id: str) -> Good:
@@ -23,16 +21,7 @@ def handle_good(good_dir: dict) -> Good:
     good.balance = good_dir.get("balance", good.balance)
     good.art = good_dir.get("art", good.art)
     good.comment = good_dir.get("comment", good.comment)
-
-    key_name = "manufacturer"
-    if key_name in good_dir:
-        temp_dir = good_dir.get(key_name)
-        good.manufacturer = None if temp_dir is None else handle_manufacturer(temp_dir)
-
-    key_name = "cartegory"
-    if key_name in good_dir:
-        temp_dir = good_dir.get(key_name)
-        good.category = None if temp_dir is None else handle_category(temp_dir)
+    good.manufacturer = good_dir.get("comment", good.manufacturer)
     good.save()
     return good
 
@@ -57,22 +46,12 @@ def fetch_goods_queryset_by_name_or_article(search: str):
     return queryset
 
 
-def fetch_goods_queryset_by_manufacturer(manufacturers: List[Manufacturer]):
-    queryset = Good.objects.filter(manufacturer__in=manufacturers)
-    return queryset
-
-
-def fetch_goods_queryset_by_category(categories: List[Category]):
-    queryset = Good.objects.filter(manufacturer__in=categories)
-    return queryset
-
-
 def fetch_goods_queryset_by_group(group: Good):
     queryset = Good.objects.filter(parent=group).order_by("-is_group", "name")
     return queryset
 
 
-def fetch_goods_queryset_by_filters(
+"""def fetch_goods_queryset_by_filters(
     manufacturers: List[Manufacturer], categories: List[Category]
 ):
     filters = Q()
@@ -83,4 +62,4 @@ def fetch_goods_queryset_by_filters(
         filters.add(Q(category__in=categories), Q.AND)
 
     queryset = Good.objects.filter(filters)
-    return queryset
+    return queryset"""

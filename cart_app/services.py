@@ -4,39 +4,40 @@ from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django.template import loader
-from auth_app.models import Token
+from auth_app.models import User
 from cart_app.models import Recipient, CartItem
 from catalog_app.models import Good
 
 CartItems: TypeAlias = QuerySet[CartItem]
 
 
-def get_token(token: str) -> Token:
-    return get_object_or_404(Token, id=token)
+def fetch_users_cart(user: User) -> CartItems:
+    """Возвращает выборку элементов корзины пользователя user"""
+    return CartItem.objects.filter(user=user)
 
 
 def get_good(good_id: str) -> Good:
     return get_object_or_404(Good, id=good_id)
 
 
-def get_cart(token: Token) -> CartItems:
-    return CartItem.objects.filter(token=token).all()
+def get_cart(user: User) -> CartItems:
+    return CartItem.objects.filter(user=user).all()
 
 
-def add_to_cart(token: Token, good: Good, qnt: Decimal = Decimal("1")) -> None:
-    cart_item, _ = CartItem.objects.get_or_create(token=token, good=good)
+def add_to_cart(user: User, good: Good, qnt: Decimal = Decimal("1")) -> None:
+    cart_item, _ = CartItem.objects.get_or_create(user=user, good=good)
     cart_item.qnt += qnt
     cart_item.save()
 
 
-def set_to_cart(token: Token, good: Good, qnt: Decimal = Decimal("1")) -> None:
-    cart_item, _ = CartItem.objects.get_or_create(token=token, good=good)
+def set_to_cart(user: User, good: Good, qnt: Decimal = Decimal("1")) -> None:
+    cart_item, _ = CartItem.objects.get_or_create(user=user, good=good)
     cart_item.qnt = qnt
     cart_item.save()
 
 
-def delete_from_cart(token: Token, good: Good, qnt: Decimal = Decimal("1")) -> None:
-    cart_item = CartItem.objects.filter(token=token, good=good).first()
+def delete_from_cart(user: User, good: Good, qnt: Decimal = Decimal("1")) -> None:
+    cart_item = CartItem.objects.filter(user=user, good=good).first()
     if cart_item:
         if cart_item.qnt <= qnt:
             cart_item.delete()
@@ -45,8 +46,8 @@ def delete_from_cart(token: Token, good: Good, qnt: Decimal = Decimal("1")) -> N
             cart_item.save()
 
 
-def clear_cart(token: Token) -> None:
-    CartItem.objects.filter(token=token).delete()
+def clear_cart(user: User) -> None:
+    CartItem.objects.filter(user=user).delete()
 
 
 def prepare_html_message(context: dict):
@@ -75,4 +76,5 @@ __all__: Sequence[str] = (
     "clear_cart",
     "set_to_cart",
     "send_cart",
+    "fetch_users_cart",
 )

@@ -5,7 +5,6 @@ from cart_app.views import (
     CartSetView,
     CartDeleteView,
     CartClearView,
-    CartSendView,
 )
 
 app_name = "cart_app"
@@ -16,5 +15,4 @@ urlpatterns = [
     path("set/", CartSetView.as_view(), name="set"),
     path("delete/", CartDeleteView.as_view(), name="delete"),
     path("clear/", CartClearView.as_view(), name="clear"),
-    path("send/", CartSendView.as_view(), name="send"),
 ]

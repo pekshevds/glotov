@@ -1,22 +1,14 @@
+import uuid
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.hashers import make_password
 from auth_app.commons import default_date_plus_five_min, default_date, default_pin_code
-from server.base import Directory
-
-
-class Token(Directory):
-    def __str__(self) -> str:
-        return f"{self.id}"
-
-    class Meta:
-        verbose_name = "Токен"
-        verbose_name_plural = "Токены"
 
 
 class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     password = models.CharField(
         _("password"),
         max_length=128,
@@ -26,6 +18,7 @@ class User(AbstractUser):
     description = models.TextField(
         verbose_name="Описание", null=True, blank=True, editable=True
     )
+
     email = models.EmailField(_("email address"), blank=False, unique=True)
 
     class Meta:
