@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <table class="table table-borderless table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">Поле</th>
+                        <th scope="col">Значение</th>                        
+                    </tr>
+                </thead>
+                <tbody>                    
+                    <tr>
+                        <td>Имя</td><td>{{ name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Телефон</td><td>{{ phone }}</td>
+                    </tr>
+                    <tr>
+                        <td>Почта</td><td>{{ email }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>            
+                </tfoot>
+            </table>
+        </div>
+        <div class="row">
+            <table class="table table-borderless table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">Артикул</th>
+                        <th scope="col">Товар</th>
+                        <th scope="col">Количество</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td>{{ item.good.art }}</td><td>{{ item.good.name }}</td><td>{{ item.qnt }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>            
+                </tfoot>
+            </table>
+        </div>
+    </div>    
+</body>
+</html>
