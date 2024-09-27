@@ -62,7 +62,10 @@ class DataView(APIView):
 
 
 class UploadGoodView(APIView):
-    authentication_classes = [authentication.BasicAuthentication]
+    authentication_classes = [
+        # authentication.BasicAuthentication,
+        authentication.TokenAuthentication,
+    ]
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request: HttpRequest) -> Response:
